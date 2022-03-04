@@ -17,12 +17,18 @@
 </canvas>
 -->
   
+#cw {
+  position: fixed;
+  z-index: -1;
+}
+  
 <canvas id="canvas" width="300" height="300"></canvas>
 <canvas id="canvas2" width="150" height="150"></canvas>
 <canvas id="canvas3" width="800" height="200"></canvas>
+<canvas id="cw"></canvas>
   
 <script>
-  var sun = new Image();
+var sun = new Image();
 var moon = new Image();
 var earth = new Image();
 function init() {
@@ -178,7 +184,7 @@ window.requestAnimationFrame(clock);
 // User Variables - customize these to change the image being scrolled, its
 // direction, and the speed.
 
-img.src = 'capitan_meadows_yosemite_national_park.jpg';
+img.src = 'images.jpg';
 var CanvasXSize = 800;
 var CanvasYSize = 200;
 var speed = 30; // lower is faster
@@ -261,7 +267,98 @@ function draw() {
 </script>
   
 <script>
-  
+  const canvas = document.getElementById("cw");
+const context = canvas.getContext("2d");
+context.globalAlpha = 0.5;
+
+const cursor = {
+  x: innerWidth / 2,
+  y: innerHeight / 2,
+};
+
+let particlesArray = [];
+
+generateParticles(101);
+setSize();
+anim();
+
+addEventListener("mousemove", (e) => {
+  cursor.x = e.clientX;
+  cursor.y = e.clientY;
+});
+
+addEventListener(
+  "touchmove",
+  (e) => {
+    e.preventDefault();
+    cursor.x = e.touches[0].clientX;
+    cursor.y = e.touches[0].clientY;
+  },
+  { passive: false }
+);
+
+addEventListener("resize", () => setSize());
+
+function generateParticles(amount) {
+  for (let i = 0; i < amount; i++) {
+    particlesArray[i] = new Particle(
+      innerWidth / 2,
+      innerHeight / 2,
+      4,
+      generateColor(),
+      0.02
+    );
+  }
+}
+
+function generateColor() {
+  let hexSet = "0123456789ABCDEF";
+  let finalHexString = "#";
+  for (let i = 0; i < 6; i++) {
+    finalHexString += hexSet[Math.ceil(Math.random() * 15)];
+  }
+  return finalHexString;
+}
+
+function setSize() {
+  canvas.height = innerHeight;
+  canvas.width = innerWidth;
+}
+
+function Particle(x, y, particleTrailWidth, strokeColor, rotateSpeed) {
+  this.x = x;
+  this.y = y;
+  this.particleTrailWidth = particleTrailWidth;
+  this.strokeColor = strokeColor;
+  this.theta = Math.random() * Math.PI * 2;
+  this.rotateSpeed = rotateSpeed;
+  this.t = Math.random() * 150;
+
+  this.rotate = () => {
+    const ls = {
+      x: this.x,
+      y: this.y,
+    };
+    this.theta += this.rotateSpeed;
+    this.x = cursor.x + Math.cos(this.theta) * this.t;
+    this.y = cursor.y + Math.sin(this.theta) * this.t;
+    context.beginPath();
+    context.lineWidth = this.particleTrailWidth;
+    context.strokeStyle = this.strokeColor;
+    context.moveTo(ls.x, ls.y);
+    context.lineTo(this.x, this.y);
+    context.stroke();
+  };
+}
+
+  function anim() {
+  requestAnimationFrame(anim);
+
+  context.fillStyle = "rgba(0,0,0,0.05)";
+  context.fillRect(0, 0, canvas.width, canvas.height);
+
+  particlesArray.forEach((particle) => particle.rotate());
+}
 </script>
   
 <script>
